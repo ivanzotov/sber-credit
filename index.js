@@ -6,22 +6,40 @@ const isEqual = require('date-fns/is_equal');
 const isBefore = require('date-fns/is_before');
 const getDaysInYear = require('date-fns/get_days_in_year');
 
+// сумма долга 977481.1756538592
+// 1 289 073,08 сумму которую осталось заплатить сбербанку
+// за 55 платежей
+// 54 из которых 23 446,48
+// и 55-й 22 963,16
+// по идее платеж должен быть 23437,692363636363636
+
+// 1 289 026,71
+// 23 436.84910961131
+// 55 платежей
+
+
+// 94,741903705146409
+
+// Сбербанк предлагает на 46,37 рублей дороже, почему?
+
 // Данные
 const sum = 1100000; // сумма кредита
 const years = 5; // количество лет
 const percent = 12.5 / 100; // процентная ставка
 const startDate = '2018-01-12'; // дата начала
 const payments = [
-  { date: '2018-02-06', sum: 55000 },
-  { date: '2018-02-07', sum: 25000 },
+  { date: '2018-02-06', sum: 55000, force: true },
+  { date: '2018-02-07', sum: 25000, force: true },
   { date: '2018-02-12', sum: 1763.32 },
   { date: '2018-03-12', sum: 23446.48 },
   { date: '2018-04-12', sum: 23446.48 },
   { date: '2018-05-12', sum: 23446.48 },
   { date: '2018-06-12', sum: 23446.48 },
+  { date: '2018-07-12', sum: 23446.48 },
+  { date: '2018-08-12', sum: 23446.48 },
 ]
 
-const round = (num) => Math.round(num * 100) / 100
+const round = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(',', ' ')
 
 // Расчет
 const endDate = addYears(startDate, years);
@@ -33,6 +51,18 @@ let osnDolgViplacheno = 0; // выплачено осн долга
 let osnDolg = sum; // основной долг
 let percentNachisleno = 0; // начислено процентов
 const percentPerDay = percent / getDaysInYear(startDate); // процентов в день
+const periodCount = years * 12;
+
+const getPlatezhPerMonth = (sum, percent, periodCount) => {
+  const percentPerMonth = percent / 12; // процентов в месяц
+  const koeff = percentPerMonth * Math.pow(1 + percentPerMonth, periodCount) / (Math.pow(1 + percentPerMonth, periodCount) - 1)
+  return koeff * sum;
+}
+
+const peri = 60
+const platezh = getPlatezhPerMonth(1100000, percent, peri)
+console.log('Ежемесячный платеж: ', round(platezh));
+console.log('Сумма: ', round(platezh * peri));
 
 (new Array(days)).fill(1).forEach((_, index) => {
   const currDate = addDays(startDate, index + 1);
@@ -50,11 +80,11 @@ const percentPerDay = percent / getDaysInYear(startDate); // процентов 
     percentNachisleno = 0
   }
 
-  if (isEqual(currDate, '2018-05-14')) {
+    if (isEqual(currDate, '2018-02-07')) {
     console.log(
       `День: ${index + 1}, ` +
       `Дата: ${currDate}, \n` +
-      `Основной долг: ${round(osnDolg)}, ` +
+      `Основной долг: ${round(osnDolg)}(${osnDolg}), ` +
       `Долг с процентами: ${round(osnDolg + percentNachisleno)}, ` +
       `Выплачено процентов всего: ${round(procentovViplacheno)}, ` +
       `Выплачено осн. долга всего: ${round(osnDolgViplacheno)}, ` +
