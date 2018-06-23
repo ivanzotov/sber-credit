@@ -25,6 +25,16 @@ const payments = [
 
 const currency = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(',', ' ')
 
+const getPlatezhPerMonth = (sum, percent, periodCount) => {
+  const percentPerMonth = percent / 12; // процентов в месяц
+  const koeff = percentPerMonth * Math.pow(1 + percentPerMonth, periodCount) / (Math.pow(1 + percentPerMonth, periodCount) - 1)
+  return koeff * sum;
+}
+
+const peri = 60
+const platezh = getPlatezhPerMonth(1100000, percent, peri);
+console.log('Ежемесячный платеж: ', currency(platezh));
+
 // Расчет
 const endDate = addYears(startDate, years);
 const days = differenceInDays(endDate, startDate); // количество дней
