@@ -21,12 +21,6 @@ const payments = [
   { date: '2018-02-06', sum: 55000 },
   { date: '2018-02-07', sum: 25000 },
   { date: '2018-02-12', sum: 1763.32 },
-  /*{ date: '2018-03-12', sum: 23446.48 },
-  { date: '2018-04-12', sum: 23446.48 },
-  { date: '2018-05-12', sum: 23446.48 },
-  { date: '2018-06-12', sum: 23446.48 },
-  { date: '2018-07-12', sum: 23446.48 },
-  { date: '2018-08-12', sum: 23446.48 }, */
 ]
 
 const currency = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(',', ' ')
@@ -64,6 +58,11 @@ const periodCount = years * 12;
       percentNachisleno = 0
     }
   }
+
+  // 0,034246575342466
+  // 22 721,93
+  // 233,444486301371544
+  // 12,916882500738274
 
   if (isEqual(currDate, '2022-10-14')) {
     console.log(
