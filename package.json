@@ -1,0 +1,10 @@
+{
+  "name": "credit",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Ivan Zotov <ivanzotov@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "date-fns": "^1.29.0"
+  }
+}
