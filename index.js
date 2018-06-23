@@ -21,15 +21,15 @@ const payments = [
   { date: '2018-02-06', sum: 55000 },
   { date: '2018-02-07', sum: 25000 },
   { date: '2018-02-12', sum: 1763.32 },
-  { date: '2018-03-12', sum: 23446.48 },
+  /*{ date: '2018-03-12', sum: 23446.48 },
   { date: '2018-04-12', sum: 23446.48 },
   { date: '2018-05-12', sum: 23446.48 },
   { date: '2018-06-12', sum: 23446.48 },
   { date: '2018-07-12', sum: 23446.48 },
-  { date: '2018-08-12', sum: 23446.48 },
+  { date: '2018-08-12', sum: 23446.48 }, */
 ]
 
-const round = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(',', ' ')
+const currency = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(',', ' ')
 
 // Расчет
 const endDate = addYears(startDate, years);
@@ -40,34 +40,40 @@ let procentovViplacheno = 0; // выплачено процентов
 let osnDolgViplacheno = 0; // выплачено осн долга
 let osnDolg = sum; // основной долг
 let percentNachisleno = 0; // начислено процентов
-const percentPerDay = percent / getDaysInYear(startDate); // процентов в день
 const periodCount = years * 12;
 
 (new Array(days)).fill(1).forEach((_, index) => {
   const currDate = addDays(startDate, index + 1);
-  const payment = payments.find(_payment =>
+  const percentPerDay = percent / getDaysInYear(currDate); // процентов в день
+  let payment = payments.find(_payment =>
     isEqual(_payment.date, currDate)
   )
 
-  percentNachisleno = percentNachisleno + (osnDolg * percentPerDay);
+  if (!isEqual(currDate, endDate)) {
+    percentNachisleno = percentNachisleno + (osnDolg * percentPerDay);
 
-  if (payment) {
-    vsegoViplacheno = vsegoViplacheno + payment.sum
-    procentovViplacheno = procentovViplacheno + percentNachisleno
-    osnDolgViplacheno = osnDolgViplacheno + (payment.sum - percentNachisleno)
-    osnDolg = osnDolg - (payment.sum - percentNachisleno)
-    percentNachisleno = 0
+    if (!payment && getDate(currDate) === date) {
+      payment = { sum: 23446.48 }
+    }
+
+    if (payment) {
+      vsegoViplacheno = vsegoViplacheno + payment.sum
+      procentovViplacheno = procentovViplacheno + percentNachisleno
+      osnDolgViplacheno = osnDolgViplacheno + (payment.sum - percentNachisleno)
+      osnDolg = osnDolg - (payment.sum - percentNachisleno);
+      percentNachisleno = 0
+    }
   }
 
-    if (isEqual(currDate, '2018-02-07')) {
+  if (isEqual(currDate, '2022-10-14')) {
     console.log(
       `День: ${index + 1}, ` +
       `Дата: ${currDate}, \n` +
-      `Основной долг: ${round(osnDolg)}(${osnDolg}), ` +
-      `Долг с процентами: ${round(osnDolg + percentNachisleno)}, ` +
-      `Выплачено процентов всего: ${round(procentovViplacheno)}, ` +
-      `Выплачено осн. долга всего: ${round(osnDolgViplacheno)}, ` +
-      `Выплачено всего: ${round(vsegoViplacheno)}, `
+      `Основной долг: ${currency(osnDolg)}(${osnDolg}), ` +
+      `Долг с процентами: ${currency(osnDolg + percentNachisleno)}, ` +
+      `Выплачено процентов всего: ${currency(procentovViplacheno)}, ` +
+      `Выплачено осн. долга всего: ${currency(osnDolgViplacheno)}, ` +
+      `Выплачено всего: ${currency(vsegoViplacheno)}, `
     );
   }
 })
