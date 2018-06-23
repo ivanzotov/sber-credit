@@ -6,19 +6,14 @@ const isEqual = require('date-fns/is_equal');
 const isBefore = require('date-fns/is_before');
 const getDaysInYear = require('date-fns/get_days_in_year');
 
-// 1 383 622,57
-
 // 1 382 859 сбер предлагает оплатить с 12 марта
-// сумма долга 977481.1756538592
-// 1 289 073,08 сумму которую осталось заплатить сбербанку
-// за 55 платежей
-// 54 (+4) из которых 23 446,48
+// 58 из которых 23 446,48
 // и 55-й 22 963,16
 
-// 23 438,288135593220339
+// как бы таким должен быть платеж – 23438,288135593220339
+// но он почему то вот такой 23 446,48
 
-// 895963,12
-// 0,000342465753425
+// 1 464 622,32
 
 // Данные
 const sum = 1100000; // сумма кредита
@@ -33,7 +28,7 @@ const payments = [
 
 const round = (num) => Math.round(num * 100) / 100;
 
-const currency = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(',', ' ').replace('.', ',')
+const currency = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(/,/g, ' ').replace(/\./g, ',')
 
 const getPlatezhPerMonth = (sum, percent, periodCount) => {
   const percentPerMonth = percent / 12; // процентов в месяц
@@ -87,7 +82,7 @@ let kopeek = 0; // копейки
   // 233,444486301371544
   // 12,916882500738274
 
-  if (getDate(currDate) === date) {
+  //if (getDate(currDate) === date) {
     console.log(
       `День: ${index + 1}, ` +
       `Дата: ${currDate}, ` +
@@ -99,7 +94,7 @@ let kopeek = 0; // копейки
       `Выплачено всего: ${currency(vsegoViplacheno)}, ` +
       `Осн долг: ${payment ? round(payment.sum - percentNachisleno) : ''}`,
     );
-  }
+  //}
 
   if (payment) percentNachisleno = 0
 })
