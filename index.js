@@ -14,6 +14,7 @@ const getDaysInYear = require('date-fns/get_days_in_year');
 // но он почему то вот такой 23 446,48
 
 // 1 464 622,32
+// 1 464 518,18
 
 // Данные
 const sum = 1100000; // сумма кредита
@@ -32,13 +33,11 @@ const currency = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 10
 
 const getPlatezhPerMonth = (sum, percent, periodCount) => {
   const percentPerMonth = percent / 12; // процентов в месяц
-  const koeff = percentPerMonth * Math.pow(1 + percentPerMonth, periodCount) / (Math.pow(1 + percentPerMonth, periodCount) - 1)
-  return koeff * sum;
+  return sum * (percentPerMonth + percentPerMonth / (Math.pow(1 + percentPerMonth, periodCount) - 1))
 }
 
 const peri = 59
-const platezh = getPlatezhPerMonth(1029778.91, percent, peri);
-console.log('Ежемесячный платеж: ', currency(platezh));
+let platezh = getPlatezhPerMonth(1029778.91, percent, peri);
 
 // Расчет
 const endDate = addYears(startDate, years);
@@ -61,42 +60,37 @@ let kopeek = 0; // копейки
 
   percentNachisleno = percentNachisleno + osnDolg * percentPerDay;
 
-  if (!isEqual(currDate, endDate)) {
-    if (!payment && getDate(currDate) === date) {
-      payment = { sum: 23446.48 }
-    }
-
-    if (payment) {
-      vsegoViplacheno = vsegoViplacheno + payment.sum
-      procentovViplacheno = procentovViplacheno + percentNachisleno
-      osnDolgViplacheno = osnDolgViplacheno + (payment.sum - percentNachisleno)
-      osnDolgRounded = round(osnDolg) - round(payment.sum - percentNachisleno);
-      osnDolgNotRounded = osnDolg - (payment.sum - percentNachisleno);
-      kopeek = kopeek + (osnDolgRounded - osnDolgNotRounded);
-      osnDolg = osnDolgRounded
-    }
+  if (!payment && getDate(currDate) === date) {
+    osnDolgWithPercent = osnDolg + percentNachisleno
+    // platezh = 23446.48
+    payment = { sum: osnDolgWithPercent < platezh ? osnDolgWithPercent : platezh } // 23446.48 }
   }
 
-  // 0,034246575342466
-  // 22 721,93
-  // 233,444486301371544
-  // 12,916882500738274
+  if (payment) {
+    vsegoViplacheno = vsegoViplacheno + payment.sum
+    procentovViplacheno = procentovViplacheno + percentNachisleno
+    osnDolgViplacheno = osnDolgViplacheno + (payment.sum - percentNachisleno)
+    osnDolgRounded = round(osnDolg) - round(payment.sum - percentNachisleno);
+    osnDolgNotRounded = osnDolg - (payment.sum - percentNachisleno);
+    kopeek = kopeek + (osnDolgRounded - osnDolgNotRounded);
+    osnDolg = osnDolgRounded
+  }
 
-  //if (getDate(currDate) === date) {
+  //if (getDate(currDate) === date || payment) {
     console.log(
-      `День: ${index + 1}, ` +
       `Дата: ${currDate}, ` +
-      `Основной долг: ${currency(osnDolg)}(${osnDolg}), ` +
-      `Проценты: ${round(percentNachisleno)}, ` +
-      `Долг с процентами: ${currency(osnDolg + percentNachisleno)}, ` +
-      `Выплачено процентов всего: ${currency(procentovViplacheno)}, ` +
-      `Выплачено осн. долга всего: ${currency(osnDolgViplacheno)}, ` +
-      `Выплачено всего: ${currency(vsegoViplacheno)}, ` +
-      `Осн долг: ${payment ? round(payment.sum - percentNachisleno) : ''}`,
+      (payment ?
+        `Платеж: ${payment.sum - percentNachisleno + percentNachisleno}, ` +
+        `На проценты: ${currency(percentNachisleno)}, ` +
+        `На осн. долг: ${payment ? currency(payment.sum - percentNachisleno) : ''}, `
+        : `Долг с процентами: ${currency(osnDolg + percentNachisleno)}, `
+      ) +
+      `Остаток осн долга: ${currency(osnDolg)}(${osnDolg}), `
     );
   //}
 
   if (payment) percentNachisleno = 0
 })
 
-console.log('Копеек: ', kopeek);
+console.log(`Выплачено всего: ${currency(vsegoViplacheno)}`)
+console.log('Платеж: ', currency(platezh));
