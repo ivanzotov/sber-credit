@@ -1,3 +1,4 @@
+const format = require('date-fns/format')
 const differenceInDays = require('date-fns/difference_in_days');
 const getDate = require('date-fns/get_date');
 const addYears = require('date-fns/add_years');
@@ -29,7 +30,7 @@ const payments = [
 
 const round = (num) => Math.round(num * 100) / 100;
 
-const currency = (num) => (new Intl.NumberFormat('ru').format(Math.ceil(num * 100) / 100)).replace(/,/g, ' ').replace(/\./g, ',')
+const currency = (num) => (new Intl.NumberFormat('ru').format(Math.round(num * 100) / 100)).replace(/,/g, ' ').replace(/\./g, ',')
 
 const getPlatezhPerMonth = (sum, percent, periodCount) => {
   const percentPerMonth = percent / 12; // процентов в месяц
@@ -37,7 +38,9 @@ const getPlatezhPerMonth = (sum, percent, periodCount) => {
 }
 
 const peri = 59
-let platezh = getPlatezhPerMonth(1029778.91, percent, peri);
+// 1 029 778,91
+// 1 029 570.64
+let platezh = getPlatezhPerMonth(1029570.642, percent, peri);
 
 // Расчет
 const endDate = addYears(startDate, years);
@@ -62,7 +65,6 @@ let kopeek = 0; // копейки
 
   if (!payment && getDate(currDate) === date) {
     osnDolgWithPercent = osnDolg + percentNachisleno
-    // platezh = 23446.48
     payment = { sum: osnDolgWithPercent < platezh ? osnDolgWithPercent : platezh } // 23446.48 }
   }
 
@@ -76,18 +78,16 @@ let kopeek = 0; // копейки
     osnDolg = osnDolgRounded
   }
 
-  //if (getDate(currDate) === date || payment) {
-    console.log(
-      `Дата: ${currDate}, ` +
-      (payment ?
-        `Платеж: ${payment.sum - percentNachisleno + percentNachisleno}, ` +
-        `На проценты: ${currency(percentNachisleno)}, ` +
-        `На осн. долг: ${payment ? currency(payment.sum - percentNachisleno) : ''}, `
-        : `Долг с процентами: ${currency(osnDolg + percentNachisleno)}, `
-      ) +
-      `Остаток осн долга: ${currency(osnDolg)}(${osnDolg}), `
-    );
-  //}
+  console.log(
+    `Дата: ${format(currDate, 'DD.MM.YYYY')}\t` +
+    (payment ?
+      `Платеж: ${currency(payment.sum - percentNachisleno + percentNachisleno)}\t` +
+      `На осн. долг: ${payment ? currency(round(payment.sum) - round(percentNachisleno)) : ''}\t` +
+      `На проценты: ${currency(percentNachisleno)}\t`
+      : `Долг с процентами: ${currency(osnDolg + percentNachisleno)}\t`
+    ) +
+    `Остаток осн долга: ${currency(osnDolg)}\t`
+  );
 
   if (payment) percentNachisleno = 0
 })
