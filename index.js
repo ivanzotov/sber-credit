@@ -37,13 +37,14 @@ const getPlatezhPerMonth = (sum, percent, periodCount) => {
   return sum * (percentPerMonth + percentPerMonth / (Math.pow(1 + percentPerMonth, periodCount) - 1))
 }
 
-const peri = 59
+const peri = 59;
 // 1 029 778,91
-// 1 029 570.64
-let platezh = getPlatezhPerMonth(1029570.642, percent, peri);
+// 1 029 570.642 || 59.016457
+let platezh = getPlatezhPerMonth(1029778.91, percent, peri);
 
 // Расчет
 const endDate = addYears(startDate, years);
+console.log('Дней: ', differenceInDays('2018-02-07', endDate));
 const days = differenceInDays(endDate, startDate); // количество дней
 const date = getDate(startDate); // день выплат
 let vsegoViplacheno = 0; // выплачено всего
