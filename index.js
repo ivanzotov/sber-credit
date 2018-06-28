@@ -1,5 +1,5 @@
-const report = require('./fns/report'); // функции
-const d = require('./data'); // данные
-const v = {} // переменные
+const fs = require('fs')
+const schedule = require('./fns/schedule'); // функции
+const data = require('./data'); // данные
 
-console.log(report(d))
+fs.writeFileSync('./schedule.json', JSON.stringify(schedule(data)))
