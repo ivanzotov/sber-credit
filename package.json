@@ -5,6 +5,6 @@
   "author": "Ivan Zotov <ivanzotov@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "date-fns": "^1.29.0"
+    "date-fns": "1.29.0"
   }
 }
