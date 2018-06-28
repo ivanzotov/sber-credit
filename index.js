@@ -7,25 +7,15 @@ const isEqual = require('date-fns/is_equal');
 const isBefore = require('date-fns/is_before');
 const getDaysInYear = require('date-fns/get_days_in_year');
 
-// 1 382 859 сбер предлагает оплатить с 12 марта
-// 58 из которых 23 446,48
-// и 55-й 22 963,16
-
-// как бы таким должен быть платеж – 23438,288135593220339
-// но он почему то вот такой 23 446,48
-
-// 1 464 622,32
-// 1 464 518,18
-
 // Данные
 const sum = 1100000; // сумма кредита
 const years = 5; // количество лет
 const percent = 12.5 / 100; // процентная ставка
 const startDate = '2018-01-12'; // дата начала
 const payments = [
-  { date: '2018-02-06', sum: 55000 },
-  { date: '2018-02-07', sum: 25000 },
-  { date: '2018-02-12', sum: 1763.32 },
+    { date: '2018-02-06', sum: 55000 },
+    { date: '2018-02-07', sum: 25000 },
+    { date: '2018-02-12', sum: 1763.32 },
 ]
 
 const round = (num) => Math.round(num * 100) / 100;
@@ -37,10 +27,11 @@ const getPlatezhPerMonth = (sum, percent, periodCount) => {
   return sum * (percentPerMonth + percentPerMonth / (Math.pow(1 + percentPerMonth, periodCount) - 1))
 }
 
-const peri = 59;
-// 1 029 778,91
-// 1 029 570.642 || 59.016457
-let platezh = getPlatezhPerMonth(1029778.91, percent, peri);
+const peri = 60;
+
+// console.log('Платеж: ', getPlatezhPerMonth(1054417.81, percent, 59));
+// return;
+let platezh = 23446.48;
 
 // Расчет
 const endDate = addYears(startDate, years);
@@ -63,6 +54,8 @@ let kopeek = 0; // копейки
   )
 
   percentNachisleno = percentNachisleno + osnDolg * percentPerDay;
+
+  console.log(`${format(currDate, 'DD.MM.YYYY')} Долг с процентами: ${currency(osnDolg + percentNachisleno)}\t`)
 
   if (!payment && getDate(currDate) === date) {
     osnDolgWithPercent = osnDolg + percentNachisleno
@@ -94,4 +87,5 @@ let kopeek = 0; // копейки
 })
 
 console.log(`Выплачено всего: ${currency(vsegoViplacheno)}`)
+console.log(`Выплачено процентов: ${currency(procentovViplacheno)}`)
 console.log('Платеж: ', currency(platezh));
