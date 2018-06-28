@@ -1,91 +1,54 @@
-const format = require('date-fns/format')
-const differenceInDays = require('date-fns/difference_in_days');
-const getDate = require('date-fns/get_date');
-const addYears = require('date-fns/add_years');
-const addDays = require('date-fns/add_days');
-const isEqual = require('date-fns/is_equal');
-const isBefore = require('date-fns/is_before');
-const getDaysInYear = require('date-fns/get_days_in_year');
+const f = require('./fns'); // функции
+const d = require('./data'); // данные
 
-// Данные
-const sum = 1100000; // сумма кредита
-const years = 5; // количество лет
-const percent = 12.5 / 100; // процентная ставка
-const startDate = '2018-01-12'; // дата начала
-const payments = [
-    { date: '2018-02-06', sum: 55000 },
-    { date: '2018-02-07', sum: 25000 },
-    { date: '2018-02-12', sum: 1763.32 },
-]
+const v = {} // переменные
 
-const round = (num) => Math.round(num * 100) / 100;
+v.дата_окончания = f.добавить_месяцев(d.дата_начала, d.месяцев);
+v.срок_в_днях = f.дней_между_датами(v.дата_окончания, v.дата_начала);
+v.число_платежной_даты = f.взять_число(d.дата_начала);
 
-const currency = (num) => (new Intl.NumberFormat('ru').format(Math.round(num * 100) / 100)).replace(/,/g, ' ').replace(/\./g, ',')
+v.ежемесячный_платеж = f.ежемесячный_платеж(d.сумма, d.ставка, d.месяцев)
+v.всего_выплачено = 0;
+v.переплата = 0;
+v.выплачено_осн_долга = 0;
+v.остаток_осн_долга = d.сумма;
+v.процентов_с_даты_платежа = 0;
 
-const getPlatezhPerMonth = (sum, percent, periodCount) => {
-  const percentPerMonth = percent / 12; // процентов в месяц
-  return sum * (percentPerMonth + percentPerMonth / (Math.pow(1 + percentPerMonth, periodCount) - 1))
+for (
+  v.день_с_даты_начала = 1;
+  v.день_с_даты_начала === v.срок_в_днях;
+  v.день_с_даты_начала++
+) {
+  v.дата_расчета = f.добавить_дней(d.дата_начала, v.день_с_даты_начала);
+  v.число_даты_расчета = f.взять_число(v.дата_расчета);
+  v.процентов_в_день = v.ставка / f.дней_в_году(v.дата_расчета);
+  v.досрочный_платеж_на_дату_расчета =
+    d.досрочные_платежи.find(it => f.даты_равны(it.дата, v.дата_расчета))
+
+  v.процентов_с_даты_платежа =
+    v.процентов_с_даты_платежа + (v.остаток_осн_долга * v.процентов_в_день);
+
+  if (
+    !v.досрочный_платеж_на_дату_расчета &&
+    v.число_даты_расчета !== v.число_платежной_даты
+  ) {
+    v.долг_с_процентами = v.остаток_осн_долга + v.процентов_с_даты_платежа
+    v.платеж =
+      v.долг_с_процентами < v.ежемесячный_платеж ?
+        v.долг_с_процентами :
+        v.ежемесячный_платеж
+  }
+
+  if (v.досрочный_платеж_на_дату_расчета) {
+    v.выплачено_всего = v.всего_выплачено + v.платеж
+    v.выплачено_процентов = v.выплачено_процентов + v.процентов_с_даты_платежа
+    v.остаток_осн_долга_округленный =
+      f.округлить(v.остаток_осн_долга) - f.округлить(v.платеж - v.процентов_с_даты_платежа)
+    v.остаток_осн_долга_полный = v.остаток_осн_долга - (v.платеж - v.процентов_с_даты_платежа)
+    v.остаток_осн_долга = v.остаток_осн_долга_округленный
+  }
+
+  if (v.досрочный_платеж_на_дату_расчета) {
+    v.процентов_с_даты_платежа = 0
+  }
 }
-
-const peri = 60;
-
-// console.log('Платеж: ', getPlatezhPerMonth(1054417.81, percent, 59));
-// return;
-let platezh = 23446.48;
-
-// Расчет
-const endDate = addYears(startDate, years);
-console.log('Дней: ', differenceInDays('2018-02-07', endDate));
-const days = differenceInDays(endDate, startDate); // количество дней
-const date = getDate(startDate); // день выплат
-let vsegoViplacheno = 0; // выплачено всего
-let procentovViplacheno = 0; // выплачено процентов
-let osnDolgViplacheno = 0; // выплачено осн долга
-let osnDolg = sum; // основной долг
-let percentNachisleno = 0; // начислено процентов
-const periodCount = years * 12;
-let kopeek = 0; // копейки
-
-(new Array(days)).fill(1).forEach((_, index) => {
-  const currDate = addDays(startDate, index + 1);
-  const percentPerDay = percent / getDaysInYear(currDate); // процентов в день
-  let payment = payments.find(_payment =>
-    isEqual(_payment.date, currDate)
-  )
-
-  percentNachisleno = percentNachisleno + osnDolg * percentPerDay;
-
-  console.log(`${format(currDate, 'DD.MM.YYYY')} Долг с процентами: ${currency(osnDolg + percentNachisleno)}\t`)
-
-  if (!payment && getDate(currDate) === date) {
-    osnDolgWithPercent = osnDolg + percentNachisleno
-    payment = { sum: osnDolgWithPercent < platezh ? osnDolgWithPercent : platezh } // 23446.48 }
-  }
-
-  if (payment) {
-    vsegoViplacheno = vsegoViplacheno + payment.sum
-    procentovViplacheno = procentovViplacheno + percentNachisleno
-    osnDolgViplacheno = osnDolgViplacheno + (payment.sum - percentNachisleno)
-    osnDolgRounded = round(osnDolg) - round(payment.sum - percentNachisleno);
-    osnDolgNotRounded = osnDolg - (payment.sum - percentNachisleno);
-    kopeek = kopeek + (osnDolgRounded - osnDolgNotRounded);
-    osnDolg = osnDolgRounded
-  }
-
-  console.log(
-    `Дата: ${format(currDate, 'DD.MM.YYYY')}\t` +
-    (payment ?
-      `Платеж: ${currency(payment.sum - percentNachisleno + percentNachisleno)}\t` +
-      `На осн. долг: ${payment ? currency(round(payment.sum) - round(percentNachisleno)) : ''}\t` +
-      `На проценты: ${currency(percentNachisleno)}\t`
-      : `Долг с процентами: ${currency(osnDolg + percentNachisleno)}\t`
-    ) +
-    `Остаток осн долга: ${currency(osnDolg)}\t`
-  );
-
-  if (payment) percentNachisleno = 0
-})
-
-console.log(`Выплачено всего: ${currency(vsegoViplacheno)}`)
-console.log(`Выплачено процентов: ${currency(procentovViplacheno)}`)
-console.log('Платеж: ', currency(platezh));
