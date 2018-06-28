@@ -1,5 +1,5 @@
-const f = require('./fns'); // функции
+const report = require('./fns/report'); // функции
 const d = require('./data'); // данные
 const v = {} // переменные
 
-console.log(f.отчет(d, f))
+console.log(report(d))

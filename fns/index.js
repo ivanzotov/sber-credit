@@ -10,5 +10,4 @@ module.exports = {
   'денежный_формат': require('./currencyFormat'),
   'расчет_ежемесячного_платежа': require('./annuity'),
   'вывести': require('./log'),
-  'отчет': require('./report'),
 }
